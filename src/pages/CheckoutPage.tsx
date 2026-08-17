@@ -2,12 +2,14 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Button, Card } from '../components/Layout'
 import { useCart } from '../context/CartContext'
+import { calcOrder, formatBRL } from '../utils/pricing'
 
 export function CheckoutPage() {
   const navigate = useNavigate()
   const { count, clearCart } = useCart()
   const [method, setMethod] = useState<'pix' | 'card'>('pix')
   const [loading, setLoading] = useState(false)
+  const [passFeeToClient, setPassFeeToClient] = useState(true)
 
   if (count === 0) {
     return (
@@ -18,7 +20,8 @@ export function CheckoutPage() {
     )
   }
 
-  const total = count * 15
+  const order = calcOrder(count)
+  const total = passFeeToClient ? order.total : order.afterDiscount
 
   function handlePay() {
     setLoading(true)
@@ -31,9 +34,42 @@ export function CheckoutPage() {
   return (
     <div className="mx-auto max-w-lg px-4 py-10">
       <h1 className="text-3xl font-bold text-slate-900">Checkout</h1>
-      <p className="mt-2 text-slate-600">{count} foto{count > 1 ? 's' : ''} · Total R$ {total.toFixed(2)}</p>
+      <p className="mt-2 text-slate-600">{count} foto{count > 1 ? 's' : ''}</p>
 
-      <Card className="mt-8">
+      <Card className="mt-6 space-y-2 text-sm">
+        <div className="flex justify-between">
+          <span className="text-slate-600">Fotos</span>
+          <span>{formatBRL(order.subtotal)}</span>
+        </div>
+        {order.discount > 0 && (
+          <div className="flex justify-between text-emerald-700">
+            <span>Desconto ({order.discountRate * 100}%)</span>
+            <span>− {formatBRL(order.discount)}</span>
+          </div>
+        )}
+        <div className="flex justify-between">
+          <span className="text-slate-600">Taxa de serviço (10%)</span>
+          <span>{passFeeToClient ? formatBRL(order.serviceFee) : 'Absorvida pelo fotógrafo'}</span>
+        </div>
+        <div className="flex justify-between border-t border-slate-100 pt-2 text-base font-bold">
+          <span>Total a pagar</span>
+          <span>{formatBRL(total)}</span>
+        </div>
+        <p className="text-xs text-slate-500">
+          Modelo Banlek/Fotto: o fotógrafo pode repassar a taxa ao cliente ou absorvê-la.
+        </p>
+        <label className="mt-2 flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            checked={passFeeToClient}
+            onChange={(e) => setPassFeeToClient(e.target.checked)}
+            className="rounded border-slate-300"
+          />
+          Repassar taxa de serviço ao cliente (simulação)
+        </label>
+      </Card>
+
+      <Card className="mt-6">
         <h2 className="font-semibold text-slate-900">Forma de pagamento</h2>
         <div className="mt-4 grid grid-cols-2 gap-3">
           {(['pix', 'card'] as const).map((m) => (
@@ -46,7 +82,7 @@ export function CheckoutPage() {
               }`}
             >
               <p className="font-semibold">{m === 'pix' ? 'Pix' : 'Cartão'}</p>
-              <p className="text-xs text-slate-500">{m === 'pix' ? 'Aprovação instantânea' : 'Crédito ou débito'}</p>
+              <p className="text-xs text-slate-500">{m === 'pix' ? 'Confirmação imediata' : 'Crédito ou débito'}</p>
             </button>
           ))}
         </div>
@@ -74,13 +110,11 @@ export function CheckoutPage() {
         />
 
         <Button className="mt-6 w-full" disabled={loading} onClick={handlePay}>
-          {loading ? 'Processando…' : `Pagar R$ ${total.toFixed(2)}`}
+          {loading ? 'Processando…' : `Pagar ${formatBRL(total)}`}
         </Button>
       </Card>
 
-      <p className="mt-4 text-center text-xs text-slate-500">
-        Protótipo — nenhum pagamento real é processado.
-      </p>
+      <p className="mt-4 text-center text-xs text-slate-500">Protótipo — nenhum pagamento real é processado.</p>
     </div>
   )
 }

@@ -3,6 +3,7 @@ import { createContext, useContext, useMemo, useState } from 'react'
 type CartContextValue = {
   selectedIds: Set<string>
   togglePhoto: (id: string) => void
+  selectMany: (ids: string[]) => void
   clearCart: () => void
   count: number
 }
@@ -19,6 +20,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         const next = new Set(prev)
         if (next.has(id)) next.delete(id)
         else next.add(id)
+        return next
+      })
+    },
+    selectMany: (ids) => {
+      setSelectedIds((prev) => {
+        const next = new Set(prev)
+        ids.forEach((id) => next.add(id))
         return next
       })
     },

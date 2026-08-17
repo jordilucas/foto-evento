@@ -1,16 +1,23 @@
+import { pickStockImage, stockImages } from './stockImages'
+
 export type Photo = {
   id: string
   albumId: string
   caption: string
   price: number
+  imageUrl: string
 }
+
+export type AlbumVisibility = 'public' | 'unlisted' | 'private'
 
 export type Album = {
   id: string
   eventId: string
   name: string
   photoCount: number
-  coverGradient: string
+  coverImage: string
+  visibility: AlbumVisibility
+  accessCode?: string
 }
 
 export type Event = {
@@ -20,6 +27,7 @@ export type Event = {
   location: string
   photographer: string
   category: string
+  coverImage: string
   albums: Album[]
 }
 
@@ -31,10 +39,32 @@ export const events: Event[] = [
     location: 'Canindé, CE',
     photographer: 'Studio Lucas',
     category: 'Corrida',
+    coverImage: stockImages.hero.corrida,
     albums: [
-      { id: 'largada', eventId: 'corrida-caninde-2026', name: 'Largada', photoCount: 48, coverGradient: 'from-orange-400 to-red-500' },
-      { id: 'km5', eventId: 'corrida-caninde-2026', name: 'Km 5', photoCount: 62, coverGradient: 'from-sky-400 to-blue-600' },
-      { id: 'chegada', eventId: 'corrida-caninde-2026', name: 'Chegada', photoCount: 55, coverGradient: 'from-emerald-400 to-teal-600' },
+      {
+        id: 'largada',
+        eventId: 'corrida-caninde-2026',
+        name: 'Largada',
+        photoCount: 48,
+        coverImage: pickStockImage('largada', 0),
+        visibility: 'public',
+      },
+      {
+        id: 'km5',
+        eventId: 'corrida-caninde-2026',
+        name: 'Km 5',
+        photoCount: 62,
+        coverImage: pickStockImage('km5', 2),
+        visibility: 'public',
+      },
+      {
+        id: 'chegada',
+        eventId: 'corrida-caninde-2026',
+        name: 'Chegada',
+        photoCount: 55,
+        coverImage: pickStockImage('chegada', 4),
+        visibility: 'public',
+      },
     ],
   },
   {
@@ -44,16 +74,38 @@ export const events: Event[] = [
     location: 'Fortaleza, CE',
     photographer: 'Foto Momentos',
     category: 'Formatura',
+    coverImage: stockImages.hero.formatura,
     albums: [
-      { id: 'colacao', eventId: 'formatura-unifor', name: 'Colação de grau', photoCount: 120, coverGradient: 'from-violet-400 to-purple-600' },
-      { id: 'baile', eventId: 'formatura-unifor', name: 'Baile', photoCount: 89, coverGradient: 'from-pink-400 to-rose-600' },
+      {
+        id: 'colacao',
+        eventId: 'formatura-unifor',
+        name: 'Colação de grau',
+        photoCount: 120,
+        coverImage: pickStockImage('colacao', 0),
+        visibility: 'public',
+      },
+      {
+        id: 'baile',
+        eventId: 'formatura-unifor',
+        name: 'Baile',
+        photoCount: 89,
+        coverImage: pickStockImage('baile', 1),
+        visibility: 'private',
+        accessCode: 'formatura26',
+      },
     ],
   },
 ]
 
 const captions = [
-  'Atleta em ação', 'Momento da largada', 'Sorriso na chegada', 'Equipe completa',
-  'Retrato individual', 'Grupo de amigos', 'Medalha na mão', 'Comemoração',
+  'Atleta em ação',
+  'Momento da largada',
+  'Sorriso na chegada',
+  'Equipe completa',
+  'Retrato individual',
+  'Grupo de amigos',
+  'Medalha na mão',
+  'Comemoração',
 ]
 
 export function getPhotosForAlbum(albumId: string, count = 12): Photo[] {
@@ -62,7 +114,14 @@ export function getPhotosForAlbum(albumId: string, count = 12): Photo[] {
     albumId,
     caption: captions[i % captions.length],
     price: 15,
+    imageUrl: pickStockImage(albumId, i),
   }))
+}
+
+export function getAllPhotos(): Photo[] {
+  return events.flatMap((event) =>
+    event.albums.flatMap((album) => getPhotosForAlbum(album.id)),
+  )
 }
 
 export function findEvent(eventId: string) {
@@ -72,4 +131,18 @@ export function findEvent(eventId: string) {
 export function findAlbum(eventId: string, albumId: string) {
   const event = findEvent(eventId)
   return event?.albums.find((a) => a.id === albumId)
+}
+
+export function isAlbumUnlocked(eventId: string, albumId: string): boolean {
+  const album = findAlbum(eventId, albumId)
+  if (!album || album.visibility !== 'private') return true
+  return sessionStorage.getItem(`album-unlock:${eventId}:${albumId}`) === '1'
+}
+
+export function unlockAlbum(eventId: string, albumId: string, code: string): boolean {
+  const album = findAlbum(eventId, albumId)
+  if (!album?.accessCode) return false
+  if (code.trim().toLowerCase() !== album.accessCode.toLowerCase()) return false
+  sessionStorage.setItem(`album-unlock:${eventId}:${albumId}`, '1')
+  return true
 }

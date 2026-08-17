@@ -1,53 +1,89 @@
 import { Link } from 'react-router-dom'
-import { Badge, Button } from '../components/Layout'
+import { Badge, Button, CoverImage } from '../components/Layout'
+import { stockImages } from '../data/stockImages'
+
+const categories = [
+  { name: 'Corrida', image: stockImages.hero.corrida, to: '/eventos/corrida-caninde-2026' },
+  { name: 'Formatura', image: stockImages.hero.formatura, to: '/eventos/formatura-unifor' },
+  { name: 'Esporte', image: stockImages.hero.esporte, to: '/eventos/corrida-caninde-2026/albuns/chegada' },
+  { name: 'Festa', image: stockImages.hero.festa, to: '/eventos/formatura-unifor/albuns/baile' },
+]
 
 export function LandingPage() {
   return (
     <>
-      <section className="border-b border-slate-200 bg-gradient-to-b from-brand-50 to-slate-50">
-        <div className="mx-auto grid max-w-6xl gap-10 px-4 py-16 md:grid-cols-2 md:items-center">
+      <section className="border-b border-slate-200 bg-gradient-to-b from-brand-50 to-white">
+        <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 md:grid-cols-2 md:items-center md:py-16">
           <div>
-            <Badge>Protótipo navegável</Badge>
+            <Badge>Protótipo · inspiração Fotto, Banlek, FotoZoom</Badge>
             <h1 className="mt-4 text-4xl font-bold tracking-tight text-slate-900 md:text-5xl">
-              Encontre e compre suas fotos de eventos
+              Encontre suas fotos com uma selfie
             </h1>
             <p className="mt-4 text-lg text-slate-600">
-              Corridas, formaturas, esportes e festas. Busque por selfie ou navegue pelos álbuns.
-              Marca d&apos;água automática protege cada imagem até a compra.
+              Corridas, formaturas, esportes e festas no Nordeste. Busque por rosto ou número,
+              escolha as fotos e receba em alta qualidade após o pagamento.
             </p>
-            <div className="mt-8 flex flex-wrap gap-3">
+
+            <Link
+              to="/busca"
+              className="mt-8 flex items-center gap-4 rounded-2xl border-2 border-brand-200 bg-white p-4 shadow-sm transition hover:border-brand-400 hover:shadow-md"
+            >
+              <span className="flex h-14 w-14 items-center justify-center rounded-full bg-brand-100 text-sm font-bold text-brand-700">SELFIE</span>
+              <div className="text-left">
+                <p className="font-semibold text-slate-900">Buscar com selfie</p>
+                <p className="text-sm text-slate-500">Encontre suas fotos em segundos</p>
+              </div>
+              <span className="ml-auto text-brand-600">→</span>
+            </Link>
+
+            <div className="mt-4 flex flex-wrap gap-3">
               <Link to="/eventos">
                 <Button>Ver eventos</Button>
               </Link>
-              <Link to="/busca">
-                <Button variant="secondary">Buscar com selfie</Button>
+              <Link to="/minhas-fotos">
+                <Button variant="secondary">Minhas fotos</Button>
               </Link>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            {['Corrida', 'Formatura', 'Esporte', 'Festa'].map((cat, i) => (
-              <div
-                key={cat}
-                className={`aspect-square rounded-2xl bg-gradient-to-br ${
-                  ['from-orange-400 to-red-500', 'from-violet-400 to-purple-600', 'from-sky-400 to-blue-600', 'from-pink-400 to-rose-500'][i]
-                } p-4 text-white shadow-sm`}
-              >
-                <p className="text-sm font-medium opacity-80">Categoria</p>
-                <p className="text-xl font-bold">{cat}</p>
-              </div>
-            ))}
+          <div className="relative aspect-[4/3] overflow-hidden rounded-2xl shadow-lg">
+            <CoverImage
+              src={stockImages.hero.corrida}
+              alt="Corredores em evento esportivo"
+              className="h-full w-full"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+            <p className="absolute bottom-4 left-4 text-sm font-medium text-white">
+              Foto: Unsplash · exemplo
+            </p>
           </div>
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-4 py-16">
+      <section className="mx-auto max-w-6xl px-4 py-12">
+        <h2 className="text-2xl font-bold text-slate-900">Categorias</h2>
+        <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-4">
+          {categories.map((cat) => (
+            <Link
+              key={cat.name}
+              to={cat.to}
+              className="group relative aspect-square overflow-hidden rounded-2xl"
+            >
+              <CoverImage src={cat.image} alt={cat.name} className="h-full w-full transition group-hover:scale-105" />
+              <div className="absolute inset-0 bg-black/40 transition group-hover:bg-black/30" />
+              <p className="absolute bottom-3 left-3 text-lg font-bold text-white">{cat.name}</p>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-4 pb-16">
         <h2 className="text-2xl font-bold text-slate-900">Como funciona</h2>
         <div className="mt-8 grid gap-6 md:grid-cols-3">
           {[
-            { step: '1', title: 'Fotógrafo publica', desc: 'Upload em lote, álbuns por dia ou momento do evento.' },
-            { step: '2', title: 'Cliente encontra', desc: 'Link, QR Code ou busca por selfie/número de peito.' },
-            { step: '3', title: 'Compra e baixa', desc: 'Pix, cartão ou débito. Download HD após pagamento.' },
+            { step: '1', title: 'Encontre', desc: 'Selfie, número de peito ou navegue pelos álbuns do evento.' },
+            { step: '2', title: 'Compre', desc: 'Pix ou cartão. Desconto ao levar 3+ fotos. Taxa de serviço transparente.' },
+            { step: '3', title: 'Baixe em HD', desc: 'Download imediato sem marca d\'água. Acesso em Minhas fotos.' },
           ].map((item) => (
             <div key={item.step} className="rounded-2xl border border-slate-200 bg-white p-6">
               <span className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-100 text-sm font-bold text-brand-700">
@@ -60,14 +96,14 @@ export function LandingPage() {
         </div>
       </section>
 
-      <section className="border-t border-slate-200 bg-slate-900 py-16 text-white">
+      <section className="border-t border-slate-200 bg-brand-600 py-14 text-white">
         <div className="mx-auto max-w-6xl px-4 text-center">
           <h2 className="text-2xl font-bold">É fotógrafo de eventos?</h2>
-          <p className="mx-auto mt-3 max-w-xl text-slate-300">
-            Publique álbuns ilimitados, receba pagamentos online e saque via Pix em até 24h.
+          <p className="mx-auto mt-3 max-w-xl text-brand-100">
+            10% por venda, repasse configurável, álbuns privados e saque Pix em 24h.
           </p>
           <Link to="/fotografo" className="mt-6 inline-block">
-            <Button className="bg-white text-brand-700 hover:bg-slate-100">Acessar painel</Button>
+            <Button className="bg-white text-brand-700 hover:bg-brand-50">Acessar painel</Button>
           </Link>
         </div>
       </section>
